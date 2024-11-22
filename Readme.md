@@ -13,7 +13,7 @@ A FastAPI-based license management system with admin panel and license validatio
 
 ```bash
 # Clone repository
-git clone  https://github.com/dypras666/fastapi-licensemanager 
+git clone  https://github.com/dypras666/license-manager 
 cd license-manager
 
 # Create virtual environment
