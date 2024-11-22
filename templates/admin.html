@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Admin Dashboard</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-100">
+    <div class="container mx-auto p-6">
+        <div class="flex justify-between items-center mb-6">
+            <h1 class="text-2xl font-bold">License Management</h1>
+            <a href="/logout" class="bg-red-500 text-white px-4 py-2 rounded">Logout</a>
+        </div>
+
+        <!-- Create License Form -->
+        <div class="bg-white rounded-lg shadow p-6 mb-6">
+            <h2 class="text-xl font-semibold mb-4">Create New License</h2>
+            <div class="flex gap-4 items-center">
+                <label class="flex items-center">
+                    <input type="checkbox" id="isLifetime" class="mr-2">
+                    Lifetime License
+                </label>
+                <button onclick="createLicense()" class="bg-blue-500 text-white px-4 py-2 rounded">
+                    Create License
+                </button>
+            </div>
+        </div>
+
+        <!-- License List -->
+        <div class="bg-white rounded-lg shadow p-6">
+            <h2 class="text-xl font-semibold mb-4">All Licenses</h2>
+            <table class="w-full">
+                <thead>
+                    <tr class="border-b">
+                        <th class="text-left p-2">License Key</th>
+                        <th class="text-left p-2">Type</th>
+                        <th class="text-left p-2">Status</th>
+                        <th class="text-left p-2">Expiry Date</th>
+                        <th class="text-left p-2">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for license in licenses %}
+                    <tr class="border-b">
+                        <td class="p-2"><code>{{ license.key }}</code></td>
+                        <td class="p-2">{{ 'Lifetime' if license.is_lifetime else 'Annual' }}</td>
+                        <td class="p-2">
+                            <span class="px-2 py-1 rounded-full text-sm 
+                                       {{ 'bg-green-100 text-green-800' if license.is_active else 'bg-red-100 text-red-800' }}">
+                                {{ 'Active' if license.is_active else 'Inactive' }}
+                            </span>
+                        </td>
+                        <td class="p-2">{{ license.expiry_date.strftime('%Y-%m-%d') if license.expiry_date else 'Never' }}</td>
+                        <td class="p-2">
+                            {% if license.is_active %}
+                            <button onclick="revokeLicense('{{ license.key }}')" 
+                                    class="bg-red-500 text-white px-3 py-1 rounded text-sm">
+                                Revoke
+                            </button>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <script>
+    async function createLicense() {
+        try {
+            const response = await fetch('/api/licenses/', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-API-Key': 'masuk123'
+                },
+                body: JSON.stringify({
+                    is_lifetime: document.getElementById('isLifetime').checked,
+                    duration_days: 365
+                })
+            });
+            
+            if (response.ok) {
+                location.reload();
+            } else {
+                alert('Failed to create license');
+            }
+        } catch (err) {
+            alert('Error: ' + err.message);
+        }
+    }
+
+    async function revokeLicense(key) {
+        if (!confirm('Are you sure you want to revoke this license?')) return;
+        
+        try {
+            const response = await fetch(`/api/licenses/${key}`, {
+                method: 'DELETE',
+                headers: {
+                    'X-API-Key': 'masuk123'
+                }
+            });
+            
+            if (response.ok) {
+                location.reload();
+            } else {
+                alert('Failed to revoke license');
+            }
+        } catch (err) {
+            alert('Error: ' + err.message);
+        }
+    }
+    </script>
+</body>
+</html>

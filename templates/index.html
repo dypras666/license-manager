@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>License Validator</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-100">
+    <div class="min-h-screen flex items-center justify-center">
+        <div class="bg-white p-8 rounded-lg shadow-md w-96">
+            <h1 class="text-2xl font-bold mb-6">License Validator</h1>
+            <div class="mb-4">
+                <input type="text" id="licenseKey" placeholder="Enter license key" 
+                       class="w-full p-2 border rounded">
+            </div>
+            <button onclick="verifyLicense()" 
+                    class="w-full bg-blue-500 text-white p-2 rounded hover:bg-blue-600">
+                Verify License
+            </button>
+            <div id="result" class="mt-4"></div>
+        </div>
+    </div>
+
+    <script>
+    async function verifyLicense() {
+        const key = document.getElementById('licenseKey').value;
+        const resultDiv = document.getElementById('result');
+        
+        try {
+            const response = await fetch(`/api/licenses/${key}`);
+            const data = await response.json();
+            
+            if (response.ok) {
+                const status = data.is_active ? 'Active' : 'Inactive';
+                const type = data.is_lifetime ? 'Lifetime' : 'Annual';
+                const expiry = data.is_lifetime ? 'Never' : 
+                             new Date(data.expiry_date).toLocaleDateString();
+                
+                resultDiv.innerHTML = `
+                    <div class="p-4 bg-green-100 text-green-700 rounded">
+                        <p><strong>Status:</strong> ${status}</p>
+                        <p><strong>Type:</strong> ${type}</p>
+                        <p><strong>Expires:</strong> ${expiry}</p>
+                    </div>
+                `;
+            } else {
+                resultDiv.innerHTML = `
+                    <div class="p-4 bg-red-100 text-red-700 rounded">
+                        License not found
+                    </div>
+                `;
+            }
+        } catch (err) {
+            resultDiv.innerHTML = `
+                <div class="p-4 bg-red-100 text-red-700 rounded">
+                    Error: ${err.message}
+                </div>
+            `;
+        }
+    }
+    </script>
+</body>
+</html>
